@@ -5,6 +5,8 @@
 
 # Project Roadmap
 
+Note: Script in main.py is old and was meant to track CWL player performance. This needs to be edited to track only specific clan performance and NOT CWL. 
+
 This roadmap outlines the planned development milestones for the project.
 
 ## Milestone 1: Clash of Clans API Integration
