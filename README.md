@@ -8,15 +8,15 @@
 This roadmap outlines the planned development milestones for the project.
 
 ## Milestone 1: Clash of Clans API Integration
-- Develop a script to interact with the Clash of Clans API.
-- Implement functionality to collect player tags and clan tags via user input.
+- Develop a script to interact with the Clash of Clans API. (Done)
+- Implement functionality to collect player tags and clan tags via user input. (Done)
 - Track offensive and defensive statistics for competitive players within specified clan tags.
 - Only record attacks and defenses within the designated clan tags.
 
-## Milestone 2: User Interface GUI Development
-- Design and create a user interface GUI for viewing extensive statistics.
-- Display collected offensive and defensive data in a visually appealing manner.
-- Implement search and filtering capabilities for easy data exploration.
+## Milestone 2: User Interface GUI Development 
+- Design and create a user interface GUI for viewing extensive statistics. (Done)
+- Display collected offensive and defensive data in a visually appealing manner. (Done)
+- Implement search and filtering capabilities for easy data exploration.(Need to add search and filtering capabilities)
 
 ## Milestone 3: Historic Data Retrieval
 - Retrieve as much historic data as possible from the Clash of Clans API.
