@@ -1,0 +1,126 @@
+import json
+import os
+import tkinter as tk
+import logging
+from coc import ClashOfClans
+
+# Clash of Clans API token
+API_TOKEN = "API SECRET TOKEN"
+
+# File paths
+CLAN_TAGS_FILE = "clan_tags.txt"
+PLAYER_DATA_FILE = "player_data.json"
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Function to retrieve clan tags from user input
+def retrieve_clan_tags():
+    clan_tags = []
+    while True:
+        tag = input("Enter a clan tag (or type 'continue' to proceed without adding more): ")
+        if tag.lower() == "continue":
+            break
+        clan_tags.append(tag)
+    return clan_tags
+
+# Function to update the player data file
+def update_player_data_file(player_data):
+    with open(PLAYER_DATA_FILE, "r") as file:
+        existing_data = json.load(file)
+    existing_data.extend(player_data)
+    with open(PLAYER_DATA_FILE, "w") as file:
+        json.dump(existing_data, file)
+
+def fetch_warlog_data(clan_tag):
+    coc_client = ClashOfClans(API_TOKEN)
+    clan = coc_client.get_clan(clan_tag)
+
+    if clan is None:
+        logger.warning(f"Clan not found for tag: {clan_tag}")
+        return []
+
+    warlog = clan.get_warlog().items()
+    if not warlog:
+        logger.warning(f"No war log available for clan tag: {clan_tag}")
+        return []
+
+    player_data = []
+    warlog_response = clan.get_warlog().get()
+    if warlog_response.is_success:
+        warlog = warlog_response.data
+        for war in warlog:
+            for member in war.members:
+                player_tag = member.tag
+                player_attacks = member.attacks
+                player_defenses = member.defenses
+                player_data.append({
+                    "tag": player_tag,
+                    "attacks": player_attacks,
+                    "defenses": player_defenses
+                })
+    else:
+        logger.warning(f"Failed to fetch warlog for clan tag: {clan_tag}. Error: {warlog_response.error.message}")
+
+    return player_data
+
+def fetch_player_data(clan_tags):
+    player_data = []
+    for tag in clan_tags:
+        try:
+            player_data.extend(fetch_warlog_data(tag))
+        except Exception as e:
+            logger.error(f"Failed to fetch data for clan tag: {tag}", exc_info=True)
+
+    return player_data
+
+# Function to display the player data in a GUI dashboard
+def display_player_data(player_data):
+    # Create the main window
+    window = tk.Tk()
+    window.title("Clash of Clans Analytics Dashboard")
+
+    # Create labels and grids to display player data
+    tk.Label(window, text="Player Tag").grid(row=0, column=0, padx=10, pady=5)
+    tk.Label(window, text="Attacks").grid(row=0, column=1, padx=10, pady=5)
+    tk.Label(window, text="Defenses").grid(row=0, column=2, padx=10, pady=5)
+
+    # Display player data in the grid
+    for i, player in enumerate(player_data, start=1):
+        tk.Label(window, text=player["tag"]).grid(row=i, column=0, padx=10, pady=5)
+        tk.Label(window, text=player["attacks"]).grid(row=i, column=1, padx=10, pady=5)
+        tk.Label(window, text=player["defenses"]).grid(row=i, column=2, padx=10, pady=5)
+
+    # Run the GUI event loop
+    try:
+        window.mainloop()
+    except Exception as e:
+        logger.error("An error occurred while running the GUI event loop", exc_info=True)
+
+# Main function
+def main():
+    # Check if API token is available
+    if API_TOKEN is None:
+        logger.error("Clash of Clans API token is missing. Set the 'CLASH_OF_CLANS_API_TOKEN' environment variable.")
+        return
+
+    # Retrieve clan tags from user input or file
+    try:
+        with open(CLAN_TAGS_FILE, "r") as file:
+            clan_tags = file.read().splitlines()
+    except FileNotFoundError:
+        clan_tags = retrieve_clan_tags()
+        with open(CLAN_TAGS_FILE, "w") as file:
+            file.write("\n".join(clan_tags))
+
+    # Fetch and store player data
+    player_data = fetch_player_data(clan_tags)
+    update_player_data_file(player_data)
+
+    # Display player data in the GUI dashboard
+    display_player_data(player_data)
+
+# Execute the main function
+if __name__ == "__main__":
+    main()
